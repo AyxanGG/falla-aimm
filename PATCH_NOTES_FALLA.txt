@@ -1,0 +1,32 @@
+FALLA AIM ASSIST - PATCH NOTES
+
+Changes in this revision:
+1. Removed automatic demo-state injection when FloatingOverlayService starts.
+2. Removed demo-state injection when the overlay is toggled back on.
+3. Removed synthetic board fallback from BoardDetector. If the real board cannot be detected, detection returns null.
+4. Removed synthetic striker fallback. Aim lines are not generated from an assumed striker position.
+5. ScreenCaptureService now clears the overlay when a valid live board/striker state is not detected, preventing stale/demo aim marks from remaining visible.
+6. Removed demo-only rendering style and API from AimOverlayView.
+
+Not changed:
+- CarromAI and TrajectorySimulator physics logic.
+- Existing native overlay architecture.
+- Screen capture architecture and frame interval.
+
+Important limitation:
+The Gemini board coordinates from the reference screenshot have not been hard-coded. They are screenshot-specific normalized reference coordinates; applying them as a permanent screen rectangle without validating the actual Falla capture frame could misalign the overlay. A real Falla game screenshot/frame is still needed to safely calibrate the detector.
+
+Build:
+The repository includes .github/workflows/build-debug-apk.yml for GitHub Actions.
+A local build was not verified in this environment. The supplied Android Gradle wrapper is missing gradle-wrapper.jar, so use the included GitHub Actions workflow (which installs Gradle 8.7) or restore a complete Gradle wrapper before local builds.
+
+
+Falla portrait calibration update (2026-11-12)
+------------------------------------------------
+- Added a Falla-specific board profile based on the supplied 450x1000 reference frame.
+- Board bounds are frame-relative: left=0.054, top=0.276, right=0.946, bottom=0.674.
+- Pocket centres use the supplied normalized positions: (0.098,0.296), (0.902,0.296), (0.902,0.654), (0.098,0.654).
+- The profile is applied only when the captured frame aspect ratio is within 0.015 of 0.45 (portrait 450:1000). Other aspect ratios continue through the generic detector.
+- Striker and coin positions are still detected from live pixels; no fixed striker position or coin layout is hard-coded.
+- Physics / CarromAI / TrajectorySimulator were not changed.
+- This is a source update only; APK compilation and in-game validation still need to run in GitHub Actions/on device.
